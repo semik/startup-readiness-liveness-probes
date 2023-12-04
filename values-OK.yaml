@@ -1,0 +1,30 @@
+startupProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /ready
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+readinessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /ready
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 2
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+livenessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /healthz
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 2
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2

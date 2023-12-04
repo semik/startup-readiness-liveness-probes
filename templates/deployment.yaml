@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: srl-probes
+  name: srl-probes
+spec:
+  selector:
+    matchLabels:
+      app: srl-probes
+  template:
+    metadata:
+      labels:
+        app: srl-probes
+    spec:
+      containers:
+      - name: srl-probes
+        image: quay.io/redhattraining/do100-probes:latest
+        imagePullPolicy: IfNotPresent
+        startupProbe:
+        {{- .Values.startupProbe | toYaml | nindent 10}}
+        readinessProbe:
+        {{- .Values.readinessProbe | toYaml | nindent 10}}
+        livenessProbe:
+        {{- .Values.livenessProbe | toYaml  | nindent 10}}
