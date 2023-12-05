@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: srl-probes
-        image: quay.io/redhattraining/do100-probes:latest
+        image: semik75/do100-probes:0.12
         imagePullPolicy: IfNotPresent
         startupProbe:
         {{- .Values.startupProbe | toYaml | nindent 10}}
