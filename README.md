@@ -57,10 +57,22 @@ nodejs server running on http://0.0.0.0:8080
 41.49: serving user request
 ```
 
-The first time K8s tries the `startupProbe` is after `startupProbe.initialDelaySeconds=20`. Slightly lower value 19.11 than 20 is due a container startup overhead, it takes 0.89s to actualy reach a moment when app reacheches [startup point and is able to record it's startup time](https://github.com/semik/DO100-apps/blob/main/probes/app.js#L91).
+The first time when K8s tries the `startupProbe` is after `startupProbe.initialDelaySeconds=20`. Slightly lower value 19.11 than 20 is due a container startup overhead, it takes 0.89s to actualy reach [a startup point where app is able to record it's startup time](https://github.com/semik/DO100-apps/blob/main/probes/app.js#L91).
 
 Another thing worth mentioning is that readinessProbe.initialDelaySeconds=20 is counted since container startup, **not after `startupProbe` finishes** as I thought at first time. You can see that the first moment where `/ready` mentioned is at 39.11s just after `startupProbe` sucesfully finished.
 
+There is one problem, sometimes apps starts at 29s and I've no idea why. It looks like like a sampling problem, but I can't figure it. In this case it looks like:
+```
+> probes@1.0.0 start
+> node app.js
+
+nodejs server running on http://0.0.0.0:8080
+29.13: ping /startup => pong [notready]
+39.13: ping /startup => pong [ready]
+39.13: ping /ready => pong [ready]
+40.16: serving user request
+```
+**Where is that aditional 10s comming from!?** Well at least it start serving user at sime time...
 
 ### App logs:
 
