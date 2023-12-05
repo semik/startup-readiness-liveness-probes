@@ -4,9 +4,10 @@ This is my learning project I used for exploration of Startup, Liveness, and Rea
 
 I've created my own Helm chart to deploy and uninstall all needed components quickly. It depends on simple application from image [do100-probes](https://quay.io/repository/redhattraining/do100-probes?tab=tags&tag=latest) it offers three URI:
   * '/' "an application" for a user which returns text **Hello! This is the index page for the app.**
+  * '/startup' which return HTTP 503 for first 30seconds and HTTP 200 later, added by my just to be able diferentiate them
   * '/ready' which return HTTP 503 for first 30seconds and HTTP 200 later
   * '/healthz' which return health status based on following
-  * '/flip' allows to disable and reactivate readines and same for health status, see [source code](https://github.com/RedHatTraining/DO100-apps/blob/main/probes/app.js#L47C13-L47C20)
+  * '/flip' allows to disable and reactivate readines and same for health status, see [source code](https://github.com/semik/DO100-apps/blob/main/probes/app.js#L67)
 
 ## Succesfull startup
 
