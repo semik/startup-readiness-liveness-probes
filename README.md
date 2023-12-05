@@ -2,7 +2,7 @@
 
 This is my learning project I used for exploration of Startup, Liveness, and Readiness Probes in K8s. It is derived from from [Guided Exercise: Liveness, Readiness, and Startup Probes](https://kubebyexample.com/learning-paths/application-development-kubernetes/lesson-4-customize-deployments-application-3) by [kubebyexample.com](https://kubebyexample.com/).
 
-I've created my own Helm chart to deploy and uninstall all needed components quickly. It depends on simple application from image [do100-probes](https://quay.io/repository/redhattraining/do100-probes?tab=tags&tag=latest) it offers three URI:
+I've created my own Helm chart to deploy and uninstall all needed components quickly. It depends on simple application from image [do100-probes]([https://hub.docker.com/repository/docker/semik75/do100-probes] it offers four URI:
   * '/' "an application" for a user which returns text **Hello! This is the index page for the app.**
   * '/startup' which return HTTP 503 for first 30seconds and HTTP 200 later, added by my just to be able diferentiate them
   * '/ready' which return HTTP 503 for first 30seconds and HTTP 200 later
@@ -75,26 +75,74 @@ nodejs server running on http://0.0.0.0:8080
 ```
 **Where is that aditional 10s comming from!?** Well at least it start serving user at sime time...
 
-### App logs:
-
-
-
 ## Always falling to startup
 
+In case of too short `startupProbe` like in this [example](https://github.com/semik/startup-readiness-liveness-probes/blob/develop/values-fail-to-start.yaml):
 ```
 startupProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /startup
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+readinessProbe:
   failureThreshold: 3
   httpGet:
     path: /ready
     port: 8080
     scheme: HTTP
-  initialDelaySeconds: 2
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 2
+livenessProbe:
+  failureThreshold: 3
+  httpGet:
+    path: /healthz
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 5
   periodSeconds: 10
   successThreshold: 1
   timeoutSeconds: 2
 ```
 
-Above startupProbe will not allow application work. The application need 30s to respond to `/ready` OK. There is `initialDelaySeconds: 2`  + ( failureThreshold: 3 * periodSeconds: 10 ) = 32s` which is more than 
+Application fail to reach readines and is being restarted:
+
+```
+> probes@1.0.0 start
+> node app.js
+
+nodejs server running on http://0.0.0.0:8080
+8.87: ping /startup => pong [notready]
+18.86: ping /startup => pong [notready]
+28.86: ping /startup => pong [notready]
+npm ERR! path /opt/app-root/src
+npm ERR! command failed
+npm ERR! signal SIGTERM
+```
+The problem is also recorded in events:
+
+```
+$ kubectl get events -A
+NAMESPACE     LAST SEEN   TYPE      REASON              OBJECT                                    MESSAGE
+demo          9m19s       Normal    Scheduled           pod/srl-probes-5b798c5db8-5r4nx           Successfully assigned demo/srl-probes-5b798c5db8-5r4nx to node3
+demo          4m18s       Normal    Pulled              pod/srl-probes-5b798c5db8-5r4nx           Container image "semik75/do100-probes:0.12" already present on machine
+demo          7m48s       Normal    Created             pod/srl-probes-5b798c5db8-5r4nx           Created container srl-probes
+demo          7m48s       Normal    Started             pod/srl-probes-5b798c5db8-5r4nx           Started container srl-probes
+demo          7m39s       Warning   Unhealthy           pod/srl-probes-5b798c5db8-5r4nx           Startup probe failed: HTTP probe failed with statuscode: 503
+demo          7m49s       Normal    Killing             pod/srl-probes-5b798c5db8-5r4nx           Container srl-probes failed startup probe, will be restarted
+demo          9m19s       Normal    SuccessfulCreate    replicaset/srl-probes-5b798c5db8          Created pod: srl-probes-5b798c5db8-5r4nx
+demo          9m19s       Normal    ScalingReplicaSet   deployment/srl-probes                     Scaled up replica set srl-probes-5b798c5db8 to 1
+demo          8m58s       Normal    Sync                ingress/srl-probes                        Scheduled for sync
+demo          8m58s       Normal    Sync                ingress/srl-probes                        Scheduled for sync
+demo          8m58s       Normal    Sync                ingress/srl-probes                        Scheduled for sync
+```
+Above startupProbe will not allow application work. The application need 30s to respond to `/startup` OK. There is `initialDelaySeconds: 2`  + ( failureThreshold: 3 * periodSeconds: 10 ) = 32s` which is more than 
 
 ```
 $ kubectl get events 
