@@ -9,6 +9,34 @@ I've created my own Helm chart to deploy and uninstall all needed components qui
   * '/healthz' which return health status based on following
   * '/flip' allows to disable and reactivate readines and same for health status, see [source code](https://github.com/semik/DO100-apps/blob/main/probes/app.js#L67)
 
+## Usage tips
+
+Open one window with:
+```bash
+watch -n1 'kubectl get all; echo ""; echo "WGET:"; wget -q -O - http://hello.example.com/'
+```
+
+Another with:
+```bash
+while true; do echo ">>>> RESTART <<<<"; kubectl logs -f `kubectl get pods --no-headers| cut -f 1 -d ' '`; done
+```
+
+Install:
+```
+$ kubectl delete ns demo ; kubectl create ns demo ; sleep 5; helm upgrade --install -f values-fail-to-start.yaml srl-probes .
+namespace "demo" deleted
+namespace/demo created
+Release "srl-probes" does not exist. Installing it now.
+NAME: srl-probes
+LAST DEPLOYED: Wed Dec  6 17:38:43 2023
+NAMESPACE: demo
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+```
+
+
+
 ## Succesfull startup
 
 ### Probes definition
