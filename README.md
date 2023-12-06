@@ -160,6 +160,8 @@ LAST SEEN   TYPE      REASON              OBJECT                             MES
 4m37s       Normal    Sync                ingress/srl-probes                 Scheduled for sync
 4m37s       Normal    Sync                ingress/srl-probes                 Scheduled for sync
 ```
+
+However after some time most of logs get deleted...
 ```
 $ kubectl get events -A
 NAMESPACE   LAST SEEN   TYPE      REASON      OBJECT                            MESSAGE
